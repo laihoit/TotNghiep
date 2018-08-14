@@ -3,6 +3,7 @@ package com.totnghiep;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.devfd.RNGeocoder.RNGeocoderPackage;
 import com.RNFetchBlob.RNFetchBlobPackage;
 import com.imagepicker.ImagePickerPackage;
 import com.airbnb.android.react.maps.MapsPackage;
@@ -28,6 +29,7 @@ public class MainApplication extends NavigationApplication {
          // No need to add RnnPackage and MainReactPackage
          return Arrays.<ReactPackage>asList(
              new MainReactPackage(),
+            new RNGeocoderPackage(),
             new RNFetchBlobPackage(),
             new ImagePickerPackage(),
              new MapsPackage()

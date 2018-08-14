@@ -1,7 +1,6 @@
 import React, {Component} from 'react'
 import {View, Image,Text,StyleSheet,Dimensions, ScrollView,Alert, TouchableOpacity, Linking} from 'react-native';
 import Communications from 'react-native-communications';
-import RNImmediatePhoneCall from 'react-native-immediate-phone-call';
 
 import phone from '../../picture/phone.png';
 import sms from '../../picture/sms.png';
@@ -37,7 +36,7 @@ class Detail extends Component{
     }
     Callphone(){
          const { myphone } = this.props;
-        RNImmediatePhoneCall.immediatePhoneCall(myphone);
+        Communications.phonecall(myphone, true)
     }
     SendMessage(){
         const { myphone } = this.props;

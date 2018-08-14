@@ -14,9 +14,8 @@ const storage = firebaseApp.storage();
 const Blob = RNFetchBlob.polyfill.Blob;
 const fs = RNFetchBlob.fs;
 
-// window.XMLHttpRequest = RNFetchBlob.polyfill.XMLHttpRequest
+window.XMLHttpRequest = RNFetchBlob.polyfill.XMLHttpRequest
 window.Blob = Blob;
-//window.XMLHttpRequest = RNFetchBlob.polyfill.XMLHttpRequest;
 
 const { width, height } = Dimensions.get('window');
 
@@ -47,10 +46,10 @@ const uploadImage = (uri, mime = 'application/octet-stream') => {
           return imageRef.put(blob, { contentType: mime })
         })
         .then(() => {
-            return imageRef.getDownloadURL()
+          uploadBlob.close()
+          return imageRef.getDownloadURL()
         })
         .then((url) => {
-        uploadBlob.close()
           resolve(url)
         })
         .catch((error) => {
@@ -58,6 +57,7 @@ const uploadImage = (uri, mime = 'application/octet-stream') => {
         })
     })
   }
+
 class PostRent extends Component {
     constructor(props) {
         super(props);

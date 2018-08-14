@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, Dimensions, 
 import { firebaseApp } from '../firebase/Firebaseconfig';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { InputField } from '../component/index'
 
 import redlike from '../../picture/redlike.png';
 import like from '../../picture/like.png';
@@ -87,7 +88,8 @@ class Home extends Component {
                 myemail: item.data.Hangxe,
                 mylocal: item.data.Money,
                 mydate: item.data.NumberKm,
-                myphone: item.data.Tinhtrang,
+                tinhtrang: item.data.Tinhtrang,
+                myphone: item.data.SDT,
                 myname: item.data.Mauxe,
                 mystate: item.data.NamSx,
                 mysex: item.data.Biensoxe
@@ -122,23 +124,25 @@ class Home extends Component {
                 }
             }
             this.setState({
-                Data: data
+                Data: data,
+                searchText: searchText
             })
         }else{
             this.setState({
-                Data : null
+                Data : null,
+                searchText: searchText
             })
         }
     }
 
     render() {
         const { container, item_header, imageStyle, titleStyle,
-            item_style, image_main, view_Main, view_Touch, text_touch, SectionStyle, ImageStyle, inputstyle, imageStylelike } = styles;
+            item_style, image_main, view_Main, view_Touch, text_touch, SectionStyle, inputstyle, imageStylelike } = styles;
         const { itemlike, Data, albums } = this.state;
         return (
             <View style={container} >
-                <View style={SectionStyle} >
-                    <TextInput style={inputstyle}
+                <View  >
+                    <InputField 
                         placeholder="Tìm kiếm sản phẩm"
                         onChangeText={(searchText) => { this.searchTexta(searchText) }}
                         value={this.state.searchText}
@@ -146,7 +150,6 @@ class Home extends Component {
                         placeholderTextColor="#fff"
                     />
                 </View>
-
                 <FlatList
                     data={Data ? Data : albums}
                     renderItem={({ item }) => (

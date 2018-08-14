@@ -13,7 +13,8 @@ class HomeUser extends Component {
         items=[]
         this.state = {
             data: [],
-            value: null
+            value: null,
+            searchText :''
         };
         this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
     }
@@ -90,11 +91,13 @@ class HomeUser extends Component {
                 }
             }
             this.setState({
-                value : row
+                value : row,
+                searchText: searchText
             })
         }else if(search === ""){
             this.setState({
-                value : null
+                value : null,
+                searchText :searchText
             })
         }
     }

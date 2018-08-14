@@ -14,7 +14,7 @@ const storage = firebaseApp.storage();
 const Blob = RNFetchBlob.polyfill.Blob;
 const fs = RNFetchBlob.fs;
 
-//window.XMLHttpRequest = RNFetchBlob.polyfill.XMLHttpRequest
+window.XMLHttpRequest = RNFetchBlob.polyfill.XMLHttpRequest
 window.Blob = Blob;
 
 const { width, height } = Dimensions.get('window');
