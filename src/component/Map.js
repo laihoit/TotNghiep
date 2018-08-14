@@ -37,16 +37,12 @@ export default class Map extends Component {
     }
 
 
-    onRegionChange(region) {
-        this.setState({ region });
-      }
-  
+
     render() {
        
             return (
                 <MapView
                 region={this.state.region}
-                onRegionChange={this.onRegionChange}
                 style={{flex : 1 }}
               />
             )
