@@ -4,9 +4,18 @@ import { Container, InputField } from '../component/index';
 import { connect } from 'react-redux';
 import ImagePicker from 'react-native-image-picker';
 import * as AttachmentActor from '../attachment/action';
+import { firebaseApp } from '../firebase/Firebaseconfig';
+import RNFetchBlob from 'react-native-fetch-blob';
 
 import avatar from '../../picture/avatar.png';
 import camera from '../../picture/camera.png';
+
+const storage = firebaseApp.storage();
+const Blob = RNFetchBlob.polyfill.Blob;
+const fs = RNFetchBlob.fs;
+
+window.XMLHttpRequest = RNFetchBlob.polyfill.XMLHttpRequest
+window.Blob = Blob;
 
 var options = {
     title: 'Select Avatar',
@@ -15,9 +24,37 @@ var options = {
     ],
     storageOptions: {
         skipBackup: true,
-        path: '/Attachments/Application/'
+        path: 'images'
     }
 };
+
+const uploadImage = (uri, mime = 'application/octet-stream') => {
+    return new Promise((resolve, reject) => {
+      const uploadUri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri
+        const sessionId = new Date().getTime()
+        let uploadBlob = null
+        const imageRef = storage.ref('imagesUser').child(`${sessionId}`)
+  
+        fs.readFile(uploadUri, 'base64')
+        .then((data) => {
+          return Blob.build(data, { type: `${mime};BASE64` })
+        })
+        .then((blob) => {
+          uploadBlob = blob
+          return imageRef.put(blob, { contentType: mime })
+        })
+        .then(() => {
+          uploadBlob.close()
+          return imageRef.getDownloadURL()
+        })
+        .then((url) => {
+          resolve(url)
+        })
+        .catch((error) => {
+          reject(error)
+        })
+    })
+  }
 
 class EditPerson extends Component {
     constructor(props) {
@@ -26,38 +63,38 @@ class EditPerson extends Component {
             nameacount: '',
             lantitude: '',
             longtitude: '',
-            pass: '',
-            avatarSource: '',
-            imageuser: ''
+            emailacount: '',
+            imageuser: '',
+            phonenumber:'',
+            address :'',
+            avatarSource : null,
+            key : null
         }
     }
 
     componentDidMount() {
-        const { user } = this.props;
-        DB.db().transaction((tx) => {
-            var sql = 'SELECT * FROM Lai WHERE name=\'' + user + '\'';
-            tx.executeSql(sql, [], (tx, results) => {
-                var len = results.rows.lenght;
-                if (len == 0 && this.props.username == '') {
-                    Alert.alert('Bạn cần phải đăng nhập!');
-                } else {
-                    var row = results.rows.item(0);
-                    this.setState({ nameacount: row.name, lantitude: row.locationlan, longtitude: row.locationlong, pass: row.pass, imageuser: row.image })
-                }
+        that = this;
+        const { mystate } = this.props;
+        firebaseApp.database().ref('User').orderByChild('Username').equalTo(mystate).once('value', function(snapshot){
+            snapshot.forEach(function(child){
+                that.setState({
+                    key : child.key,
+                    nameacount : child.val().NameAcount,
+                    emailacount: child.val().Username, 
+                    phonenumber: child.val().Phone,
+                    imageuser: child.val().Image,
+                })
             })
         })
+
     }
     UpdateUser() {
-        const { user } = this.props;
-        const { lantitude, longtitude, avatarSource } = this.state;
-        DB.db().transaction((tx) => {
-            var sql = 'UPDATE Lai SET image=\'' + avatarSource + '\', locationlan=\'' + lantitude + '\', locationlong=\'' + longtitude + '\' WHERE name=\'' + user + '\'';
-            tx.executeSql(sql, [], (tx, result) => {
-                this.props.navigator.push({
-                    screen: 'Person',
-                })
-                Alert.alert('Update success!!')
-            })
+        const { key, nameacount, avatarSource, phonenumber } = this.state;
+        firebaseApp.database().ref('/User/' + key).update({ NameAcount: nameacount })
+        firebaseApp.database().ref('/User/' + key).update({ Phone: phonenumber })
+        firebaseApp.database().ref('/User/' + key).update({ Image: avatarSource })
+        this.props.navigator.push({
+            screen : 'Person',
         })
     }
     getImagePicker() {
@@ -72,15 +109,14 @@ class EditPerson extends Component {
                 console.log('User tapped custom button: ', response.customButton);
             }
             else {
-             console.log('abc ' + response.uri );
-                AttachmentActor.saveImage(response.uri)
-                    .then(response => {
-                        this.setState({
-                            avatarSource: response
-                        });
-                    })
-                    .catch(error => console.log(error))
+                uploadImage(response.uri)
+                .then(url => this.setState({ avatarSource : url }))
+                .catch(error => console.log(error))
 
+                let source = { uri: response.uri };
+                this.setState({
+                    imageuser: source
+                });
             }
         });
 
@@ -88,7 +124,7 @@ class EditPerson extends Component {
     render() {
         const { container, imgInfo, nameAndAvatarView, avatarImgInfo, avatarView, editView, editIcon, myInfo, nameInfo, nameText
             , itemEdit, editText, button, editButtonView, editButtonText } = style;
-        const { nameacount, lantitude, longtitude, pass, avatarSource, imageuser } = this.state;
+        const { nameacount ,lantitude ,longtitude ,avatarSource, imageuser, emailacount, phonenumber, address } = this.state;
         return (
             <Container>
                 <ScrollView style={container} >
@@ -96,7 +132,7 @@ class EditPerson extends Component {
                         <View style={nameAndAvatarView}>
                             <View style={imgInfo}>
                                 <View style={avatarView}>
-                                    <Image source={{ uri: avatarSource ? AttachmentActor.getMediaPath(avatarSource) : AttachmentActor.getMediaPath(imageuser) }} style={avatarImgInfo} />
+                                    <Image source={ imageuser ? imageuser : avatar} style={avatarImgInfo} />
                                 </View>
                                 <TouchableOpacity style={editView}
                                     onPress={() => this.getImagePicker()}
@@ -112,7 +148,6 @@ class EditPerson extends Component {
                                         this.setState({ nameacount })
                                     }}
                                     value={nameacount}
-                                    editable={false}
                                 />
                             </View>
                         </View>
@@ -120,10 +155,10 @@ class EditPerson extends Component {
                             <Text style={editText}>Số điện thoại</Text>
                             <InputField placeholder="Đổi số điện thoại"
                                 placeholderTextColor="#22222226"
-                                onChangeText={(lantitude) => {
-                                    this.setState({ lantitude })
+                                onChangeText={(phonenumber) => {
+                                    this.setState({ phonenumber })
                                 }}
-                                value={lantitude}
+                                value={phonenumber}
                             />
                         </View>
 
@@ -131,10 +166,11 @@ class EditPerson extends Component {
                             <Text style={editText}>Email</Text>
                             <InputField placeholder="Đổi email"
                                 placeholderTextColor="#22222226"
-                                onChangeText={(longtitude) => {
-                                    this.setState({ longtitude })
+                                onChangeText={(emailacount) => {
+                                    this.setState({ emailacount })
                                 }}
-                                value={longtitude}
+                                value={emailacount}
+                                editable={false}
                             />
                         </View>
 
@@ -142,17 +178,10 @@ class EditPerson extends Component {
                             <Text style={editText}>Địa chỉ</Text>
                             <InputField placeholder="Đổi địa chỉ"
                                 placeholderTextColor="#22222226"
-
-                            />
-                        </View>
-                        <View style={itemEdit} >
-                            <Text style={editText}>Mật khẩu</Text>
-                            <InputField placeholder="Đổi mật khẩu"
-                                placeholderTextColor="#22222226"
-                                onChangeText={(pass) => {
-                                    this.setState({ pass })
+                                onChangeText={(emailacount) => {
+                                    this.setState({ emailacount })
                                 }}
-                                value={pass}
+                                value={lantitude+", "+ longtitude}
                                 editable={false}
                             />
                         </View>
@@ -236,7 +265,7 @@ const style = StyleSheet.create({
 
 });
 const mapStateToProps = (state) => ({
-    user: state.checkLogin.user
+    mystate : state.checkLogin.user
 })
 
 export default connect(mapStateToProps)(EditPerson);

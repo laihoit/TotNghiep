@@ -69,7 +69,6 @@ class CareSale extends Component {
                         data: child.val()
                     })
                 }
-                
             })
             that.setState({
                 posted : items

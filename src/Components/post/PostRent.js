@@ -134,9 +134,6 @@ class PostRent extends Component {
             })
             this.props.navigator.push({
                 screen :'HomeUser',
-                navigatorStyle:{
-                    navBarHidden: true
-                }
             })
             Alert.alert('Đăng kí thành công');
         }

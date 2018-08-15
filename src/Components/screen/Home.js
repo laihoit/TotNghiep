@@ -8,6 +8,7 @@ import { InputField } from '../component/index'
 import redlike from '../../picture/redlike.png';
 import like from '../../picture/like.png';
 import sex from '../../picture/sex.png';
+import avatar from '../../picture/avatar.png';
 
 let rootNavigator = null;
 
@@ -24,7 +25,9 @@ class Home extends Component {
             albums: [],
             searchText: '',
             Data: null,
-            itemlike: false
+            itemlike: false,
+            imageUser: '',
+            emailacount: ''
         };
         rootNavigator = this.props.navigator;
         this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
@@ -65,6 +68,7 @@ class Home extends Component {
 
 
     componentDidMount() {
+        let that = this;
         firebaseApp.database().ref('PostSale').on('value', (snap) => {
             snap.forEach((data) => {
                 items.push({
@@ -76,6 +80,7 @@ class Home extends Component {
                 albums: items
             })
         })
+
     }
     onDetail(item) {
         this.props.navigator.push({
@@ -114,6 +119,29 @@ class Home extends Component {
         firebaseApp.database().ref('/PostSale/' + item.key).update({ UserCare: this.props.mystate })
     }
 
+    onShowImage(item) {
+        let that = this;
+        const { imageStyle } = styles;
+        const { imageUser, emailacount } = that.state;
+        var ref = firebaseApp.database().ref('User');
+        var query = ref.orderByChild('Username').equalTo(item.data.User);
+        query.once('value', function(snapshot){
+            snapshot.forEach(function(child){
+                 that.setState({
+                    emailacount: child.val().Username,
+                    imageUser : child.val().Image,
+                 }, () => {
+                    console.log(that.state.imageUser)
+                })
+            })
+        })
+            return (
+                <Image
+                    style={imageStyle}
+                    source={imageUser ? that.state.imageUser : avatar}
+                />
+            )
+    }
     searchTexta(searchText) {
         let search = new RegExp(searchText, 'gi');
         var data = [];
@@ -127,9 +155,9 @@ class Home extends Component {
                 Data: data,
                 searchText: searchText
             })
-        }else{
+        } else {
             this.setState({
-                Data : null,
+                Data: null,
                 searchText: searchText
             })
         }
@@ -138,11 +166,12 @@ class Home extends Component {
     render() {
         const { container, item_header, imageStyle, titleStyle,
             item_style, image_main, view_Main, view_Touch, text_touch, SectionStyle, inputstyle, imageStylelike } = styles;
-        const { itemlike, Data, albums } = this.state;
+        const { itemlike, Data, albums, imageUser } = this.state;
         return (
             <View style={container} >
-                <View  >
-                    <InputField 
+                <View style={SectionStyle} >
+                    <TextInput
+                        style={inputstyle}
                         placeholder="Tìm kiếm sản phẩm"
                         onChangeText={(searchText) => { this.searchTexta(searchText) }}
                         value={this.state.searchText}
@@ -156,10 +185,7 @@ class Home extends Component {
                         <View style={item_style} >
                             <View style={item_header} >
                                 <View>
-                                    <Image
-                                        style={imageStyle}
-                                        source={{ uri: item.data.Image }}
-                                    />
+                                    {this.onShowImage(item)}
                                 </View>
                                 <TouchableOpacity onPress={this.RedLike.bind(this, item)}>
                                     {item.data.Care ?
@@ -266,9 +292,10 @@ const styles = StyleSheet.create({
     SectionStyle: {
         flexDirection: 'row',
         justifyContent: 'center',
-        borderWidth: .1,
         alignItems: 'center',
-        backgroundColor: 'rgba(216, 216, 216, 0.5)',
+        backgroundColor: 'transparent',
+        borderBottomWidth: 1,
+        borderColor: '#ddd',
     },
     ImageStyle: {
         padding: 10,
@@ -280,7 +307,7 @@ const styles = StyleSheet.create({
     inputstyle: {
         flex: 1,
         height: 50,
-        marginLeft: 20
+        marginLeft: 20,
     },
 });
 

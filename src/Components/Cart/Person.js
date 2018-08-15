@@ -20,7 +20,9 @@ class Person extends Component {
                 nameacount :'', 
                 lantitude: '',
                 longtitude : '',
-                imageuser : ''
+                imageuser : '',
+                emailacount : '',
+                numberphone: ''
         }
     }
 
@@ -31,9 +33,10 @@ class Person extends Component {
         query.once('value', function(snapshot){
             snapshot.forEach(function(child){
                  that.setState({
-                    nameacount: child.val().Username,
-                    lantitude : child.val().latitude,
-                    longtitude : child.val().longitude
+                    nameacount: child.val().NameAcount,
+                    emailacount : child.val().Username,
+                    numberphone: child.val().Phone,
+                    imageuser : child.val().Image
                  })
 
             })
@@ -103,13 +106,14 @@ class Person extends Component {
                             <Image source = {edit} style={editIcon}/>
                           </TouchableOpacity>
                           <View style= {avatarView}>
-                          <Image source={avatar} style={avatarImgInfo}/>
+                          <Image source={imageuser ? imageuser : avatar} style={avatarImgInfo}/>
                           </View> 
                     </View>
 
                     <View style ={nameInfo}>
                         <Text style={userNameInfo}>{this.state.nameacount}</Text>
-                        <Text style={linkUserNameInfo}>{this.state.lantitude}, {this.state.longtitude}</Text>
+                        <Text style={linkUserNameInfo}>{this.state.emailacount}</Text>
+                        <Text style={linkUserNameInfo}>{this.state.numberphone}</Text>
                     </View>
 
                     <View style={hr}></View>
