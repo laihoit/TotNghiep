@@ -106,7 +106,7 @@ class Person extends Component {
                             <Image source = {edit} style={editIcon}/>
                           </TouchableOpacity>
                           <View style= {avatarView}>
-                          <Image source={imageuser ? imageuser : avatar} style={avatarImgInfo}/>
+                          <Image source={ imageuser ? { uri : imageuser } : avatar} style={avatarImgInfo}/>
                           </View> 
                     </View>
 

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
 import { Container, InputField } from '../component/index';
 import { connect } from 'react-redux';
 import ImagePicker from 'react-native-image-picker';
@@ -17,6 +17,8 @@ const fs = RNFetchBlob.fs;
 window.XMLHttpRequest = RNFetchBlob.polyfill.XMLHttpRequest
 window.Blob = Blob;
 
+const { width, height } = Dimensions.get('window');
+
 var options = {
     title: 'Select Avatar',
     customButtons: [
@@ -33,7 +35,7 @@ const uploadImage = (uri, mime = 'application/octet-stream') => {
       const uploadUri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri
         const sessionId = new Date().getTime()
         let uploadBlob = null
-        const imageRef = storage.ref('imagesUser').child(`${sessionId}`)
+        const imageRef = storage.ref('images').child(`${sessionId}`)
   
         fs.readFile(uploadUri, 'base64')
         .then((data) => {
@@ -55,6 +57,7 @@ const uploadImage = (uri, mime = 'application/octet-stream') => {
         })
     })
   }
+
 
 class EditPerson extends Component {
     constructor(props) {
@@ -86,16 +89,13 @@ class EditPerson extends Component {
                 })
             })
         })
-
     }
     UpdateUser() {
         const { key, nameacount, avatarSource, phonenumber } = this.state;
         firebaseApp.database().ref('/User/' + key).update({ NameAcount: nameacount })
         firebaseApp.database().ref('/User/' + key).update({ Phone: phonenumber })
         firebaseApp.database().ref('/User/' + key).update({ Image: avatarSource })
-        this.props.navigator.push({
-            screen : 'Person',
-        })
+        this.props.navigator.pop();
     }
     getImagePicker() {
         ImagePicker.showImagePicker(options, (response) => {
@@ -117,9 +117,9 @@ class EditPerson extends Component {
                 this.setState({
                     imageuser: source
                 });
+
             }
         });
-
     }
     render() {
         const { container, imgInfo, nameAndAvatarView, avatarImgInfo, avatarView, editView, editIcon, myInfo, nameInfo, nameText

@@ -27,7 +27,9 @@ class Home extends Component {
             Data: null,
             itemlike: false,
             imageUser: '',
-            emailacount: ''
+            emailacount: '',
+            nameacount : '',
+            numberphone : ''
         };
         rootNavigator = this.props.navigator;
         this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
@@ -81,6 +83,7 @@ class Home extends Component {
             })
         })
 
+
     }
     onDetail(item) {
         this.props.navigator.push({
@@ -122,7 +125,6 @@ class Home extends Component {
     onShowImage(item) {
         let that = this;
         const { imageStyle } = styles;
-        const { imageUser, emailacount } = that.state;
         var ref = firebaseApp.database().ref('User');
         var query = ref.orderByChild('Username').equalTo(item.data.User);
         query.once('value', function(snapshot){
@@ -130,15 +132,15 @@ class Home extends Component {
                  that.setState({
                     emailacount: child.val().Username,
                     imageUser : child.val().Image,
-                 }, () => {
-                    console.log(that.state.imageUser)
-                })
+                    nameacount : child.val().NameAcount,
+                    numberphone : child.val().Phone
+                 })
             })
         })
             return (
                 <Image
                     style={imageStyle}
-                    source={imageUser ? that.state.imageUser : avatar}
+                    source={this.state.imageUser ? {uri : this.state.imageUser} : avatar}
                 />
             )
     }
